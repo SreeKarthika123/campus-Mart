@@ -10,11 +10,13 @@ conn = mysql.connector.connect(
     host = 'localhost',
     user = 'root',
     password = '0806@sree',
+	database='unitrade'
 )
 conn1 = mysql.connector.connect(
     host = 'localhost',
     user = 'root',
     password = '0806@sree',
+	database='categories'
 )
 
 cursor = conn.cursor()
@@ -40,77 +42,29 @@ def hii():
 from tkinter import messagebox
 
 # ... (previous code)
-def is_admin(username):
-    # Assuming you have a table named 'admins' with a column 'username'
-    cursor.execute("SELECT * FROM admins WHERE username = %s,password=%s,email=%s", (username,password,email))
-    adminn = cursor.fetchone()
-    if adminn:
-        return True
-    else:
-        return False
+def show_next_page(item_name):
+    next_page = Toplevel(root)
+    next_page.title("Item Selected")
+    next_page.geometry(f"1550x840+{x}+{y}")
+    label = Label(next_page, text=f"Your item '{item_name}' is selected for purchasing.", font=("Helvetica", 16))
+    label.pack(pady=20)
+    button = Button(next_page, text="OK", command=next_page.destroy)
+    button.pack(pady=10)
 
-def delete_item(tree, selected_item, username):
-    if selected_item:
-        if is_admin(username):
-            # Allow deletion only if the user is an admin
-            item_name = tree.item(selected_item, "values")[0]
-            confirmation = messagebox.askyesno("Confirm Deletion", f"Do you want to delete {item_name}?")
-            if confirmation:
-                # Delete the item from the cart
-                # Add your deletion logic here
-                messagebox.showinfo("Success", f"{item_name} has been deleted.")
-                tree.delete(selected_item)
-            else:
-                messagebox.showinfo("Cancelled", "Deletion cancelled.")
-        else:
-            messagebox.showerror("Permission Denied", "You do not have permission to delete items from the cart.")
-    else:
-        messagebox.showinfo("No Item Selected", "Please select an item before deleting.")
 def buy_item(tree, cate, selected_item):
     if selected_item:
         item_name = tree.item(selected_item, "values")[0]
         confirmation = messagebox.askyesno("Confirm Purchase", f"Do you want to buy {item_name}?")
         if confirmation:
-            # Instead of directly deleting the item, notify the admin
-            item_details = f"Item Name: {item_name}\nCategory: {cate}"
-            contact_admin(item_details)
-            messagebox.showinfo("Success", f"Your request to buy {item_name} has been sent to the admin.")
+            show_next_page(item_name)
+			# cursor1.execute(f"DELETE FROM {cate} WHERE item_name = '{item_name}'")
+            # conn1.commit()
+            # messagebox.showinfo("Success", f"{item_name} has been bought.")
+            # tree.delete(selected_item)
         else:
             messagebox.showinfo("Cancelled", "Purchase cancelled.")
     else:
         messagebox.showinfo("No Item Selected", "Please select an item before buying.")
-
-def contact_admin(item_details):
-    # Assuming you have a method to send an email to the admin
-    admin_email = "asd"
-    subject = "Request for item details"
-    message = f"Hello Admin,\n\nA buyer has expressed interest in the following item:\n\n{item_details}\n\nPlease contact the buyer for further details.\n\nBest regards,\nYour Online Store"
-    
-    # Here, you can implement the code to send an email to the admin
-    # Example using smtplib:
-    import smtplib
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
-
-    sender_email = "abc"
-    password = "0806"
-
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = admin_email
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(message, 'plain'))
-
-    server = smtplib.SMTP('smtp.example.com', 587)
-    server.starttls()
-    server.login(sender_email, password)
-    text = msg.as_string()
-    server.sendmail(sender_email, admin_email, text)
-    server.quit()
-
-    # Print confirmation message
-    print("Email sent to admin for further details.")
 
 
 def proceeds(e):
@@ -136,11 +90,12 @@ def proceeds(e):
 		tree.insert('', 'end', values=it)
 	tree.column("Description", width=500)
 	tree.column("email", width=150)
-	def selectitem(itemm):
-		global name_entry,price_entry,des_entry,email_entry,temp,name_label,price_label,des_label,email_label,addbutton
-		temp = itemm
-		cursor1.execute(f"create table if not exists {temp} (item_name varchar(50),item_prize int8,item_des varchar(200),email varchar(100))")
-		conn1.commit()
+	def on_item_selected(event):
+		selected_item = tree.selection()
+		buy_item(tree, cate, selected_item)
+	tree.bind("<ButtonRelease-1>", on_item_selected)
+	tree.pack()
+	buywin.protocol("WM_DELETE_WINDOW",hii)
 def buyy():
 	global drop_down2,buyframe,buywin
 	root.withdraw()
@@ -187,27 +142,6 @@ def buyy():
 	drop_down2.current(0)
 	drop_down2.place(x=800,y=200)
 	drop_down2.bind("<<ComboboxSelected>>",proceeds)
-def show_buy_window():
-    buywin = Toplevel(root)
-    buywin.title("Buy")
-    buywin.geometry("500x500")
-    
-    # Create a label in the buy window
-    lbl = Label(buywin, text="Buy an Item", font=("Arial", 20))
-    lbl.pack(pady=20)
-    
-    # Create a button to buy an item
-    btn_buy = Button(buywin, text="Buy Item", command=buy_item)
-    btn_buy.pack(pady=10)
-    
-    # Create a button to close the buy window
-    btn_close = Button(buywin, text="Close", command=buywin.destroy)
-    btn_close.pack(pady=10)
-
-# Create a button to open the buy window
-btn_buy = Button(root, text="Buy", command=show_buy_window)
-btn_buy.place(x=50, y=50)
-
 
 def selll():
 	root.withdraw()
@@ -398,8 +332,6 @@ def buyorsell():
 	Lb7=Label(decframe,image=photo7)
 	Lb7.image=photo7
 	Lb7.place(x=650,y=120,width=400,height=400)
-	signup = Button(Lb2,text = "Sign Up",width = 22,height = 4,command = signuppage)
-
 
 	buy = Button(Lb7,text = "Buy",width = 22,height = 4,command = buyy)
 	sell = Button(Lb7,text = "Sell",width = 22,height = 4,command = selll)
