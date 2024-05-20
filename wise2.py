@@ -10,13 +10,13 @@ conn = mysql.connector.connect(
     host = 'localhost',
     user = 'root',
     password = '0806@sree',
-	database='unitrade'
+   database='unitrade'
 )
 conn1 = mysql.connector.connect(
     host = 'localhost',
     user = 'root',
     password = '0806@sree',
-	database='categories'
+    database='categories'
 )
 
 cursor = conn.cursor()
